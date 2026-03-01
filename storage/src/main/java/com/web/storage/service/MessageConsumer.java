@@ -1,7 +1,9 @@
 package com.web.storage.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.web.storage.dto.RequestMessage;
+import com.web.storage.config.RabbitConfig;
+import com.web.storage.dto.OrderRequest;
+import com.web.storage.dto.OrderStage;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
@@ -15,18 +17,27 @@ public class MessageConsumer {
         objectMapper.findAndRegisterModules(); // поддержка Instant
     }
 
-    @RabbitListener(queues = {"storage.queue", "analytics.queue"})
-    public void receive(byte[] body) {
-        try {
-            RequestMessage message = objectMapper.readValue(body, RequestMessage.class);
-
-            switch (message.getType()){
-                case STORAGE -> System.out.println(message.getPayload() + " " + message.getType());
-                case ANALYTICS -> System.out.println("Message type is  " + message.getType() + " its sectret for you!");
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse message", e);
-        }
+    @RabbitListener(queues = {"order.create.queue"})
+    public void create(OrderRequest order) {
+        // JSON уже десериализован в OrderRequest
+        System.out.println("Need to create order: " + order);
+        // Здесь можно вызывать сервис создания заказа
     }
+
+    @RabbitListener(queues = {"order.update.queue"})
+    public void update(OrderRequest order) {
+        // JSON уже десериализован в OrderRequest
+        System.out.println("Need to update order with id: " + order.getOrderID());
+        // Здесь можно вызывать сервис обновления заказа
+    }
+
+
+    @RabbitListener(queues = RabbitConfig.ORDER_GET_QUEUE)
+    public OrderRequest getOrderStage(OrderRequest request) {
+        System.out.println("Get order: " + request.getOrderID());
+        // Можно вернуть полный объект с заполненным stage
+        request.setStage(OrderStage.CANCELED);
+        return request;
+    }
+
 }
