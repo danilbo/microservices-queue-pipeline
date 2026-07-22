@@ -4,8 +4,7 @@ FROM eclipse-temurin:21-jdk
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssh-server git curl && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir /var/run/sshd
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
 
