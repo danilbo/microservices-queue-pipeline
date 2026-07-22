@@ -17,7 +17,7 @@ RUN useradd -m -s /bin/bash jenkins && \
     chmod 700 /home/jenkins/.ssh
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 22
 ENTRYPOINT ["/entrypoint.sh"]
