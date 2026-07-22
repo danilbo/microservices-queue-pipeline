@@ -36,8 +36,8 @@ credentials:
               id: "agent-ssh-key"
               username: "jenkins"
               privateKeySource:
-                fileOnMaster:
-                  privateKeyFile: "/keys/id_rsa"
+                directEntry:
+                  privateKey: "${readFile:/keys/id_rsa}"
 
 jobs:
   - script: >
