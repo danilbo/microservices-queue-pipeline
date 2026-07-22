@@ -1,16 +1,16 @@
 services:
-    ssh-keygen:
-      image: alpine:3.20
-      volumes:
-        - ssh_keys:/keys
-      entrypoint: >
-        sh -c "
-        if [ ! -f /keys/id_rsa ]; then
-          apk add --no-cache openssh-keygen &&
-          ssh-keygen -t rsa -b 4096 -f /keys/id_rsa -N '';
-        fi &&
-        chmod 644 /keys/id_rsa /keys/id_rsa.pub
-        "
+  ssh-keygen:
+    image: alpine:3.20
+    volumes:
+      - ssh_keys:/keys
+    entrypoint: >
+      sh -c "
+      if [ ! -f /keys/id_rsa ]; then
+        apk add --no-cache openssh-keygen &&
+        ssh-keygen -t rsa -b 4096 -f /keys/id_rsa -N '';
+      fi &&
+      chmod 644 /keys/id_rsa /keys/id_rsa.pub
+      "
 
   jenkins-agent:
     build:
