@@ -1,0 +1,56 @@
+jenkins:
+  systemMessage: "Jenkins for SpringServicesEx — configured with JCasC"
+  numExecutors: 0   # controller build nothing by itself — just orchestration
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+  nodes:
+    - permanent:
+        name: "docker-agent"
+        remoteFS: "/home/jenkins/agent"
+        numExecutors: 2
+        labelString: "docker-agent"
+        launcher:
+          ssh:
+            host: "jenkins-agent"
+            port: 22
+            credentialsId: "agent-ssh-key"
+            sshHostKeyVerificationStrategy:
+              nonVerifyingKeyVerificationStrategy: {}
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basicSSHUserPrivateKey:
+              scope: GLOBAL
+              id: "agent-ssh-key"
+              username: "jenkins"
+              privateKeySource:
+                fileOnMaster:
+                  privateKeyFile: "/keys/id_rsa"
+
+jobs:
+  - script: >
+      pipelineJob('spring-services-ex') {
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote { url('https://github.com/danilbo/microservices-queue-pipeline.git') }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }

@@ -1,0 +1,53 @@
+services:
+  ssh-keygen:
+    image: alpine:3.20
+    volumes:
+      - ssh_keys:/keys
+    entrypoint: >
+      sh -c "
+      if [ ! -f /keys/id_rsa ]; then
+        apk add --no-cache openssh-keygen &&
+        ssh-keygen -t rsa -b 4096 -f /keys/id_rsa -N '' &&
+        chmod 644 /keys/id_rsa.pub;
+      fi
+      "
+
+  jenkins-agent:
+    build:
+      context: ./agent
+    container_name: jenkins-agent
+    restart: unless-stopped
+    depends_on:
+      ssh-keygen:
+        condition: service_completed_successfully
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ssh_keys:/keys:ro
+    networks:
+      - jenkins-net
+
+  jenkins-controller:
+    build:
+      context: ./controller
+    container_name: jenkins-controller
+    restart: unless-stopped
+    depends_on:
+      ssh-keygen:
+        condition: service_completed_successfully
+      jenkins-agent:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ssh_keys:/keys:ro
+    networks:
+      - jenkins-net
+
+networks:
+  jenkins-net:
+    driver: bridge
+
+volumes:
+  jenkins_home:
+  ssh_keys:
