@@ -1,6 +1,6 @@
 FROM docker:26-cli AS docker-cli
 
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21-jdk-noble
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends openssh-server git curl && \
